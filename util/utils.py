@@ -643,7 +643,7 @@ class Utils(object):
             aspect_ratio = width / float(height)
 
             # filter out non-Siren matches (non-squares)
-            if len(approx) == 4 and 170 <= width <= 230 and 80 <= height <= 180:
+            if 3 <= len(approx) <= 4 and 60 <= width <= 230 and 20 <= height <= 180:
                 locations.append([x, y])
 
         return cls.filter_similar_coords(locations)
