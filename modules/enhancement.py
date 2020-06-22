@@ -78,10 +78,11 @@ class EnhancementModule(object):
                         Utils.touch_randomly(self.region['button_go_back'])
                     return self.enhancement_done
                 if Utils.find("enhancement/button_favorite", 0.99):
-                    self.enhance_ship()
-                    Utils.script_sleep(1)
+                    Utils.script_sleep(1.0)
                     Utils.touch_randomly(self.region['button_favorite'])
                     Utils.script_sleep(0.5)
+                    self.enhance_ship()
+                    Utils.script_sleep(1)
                     if self.called_from_menu:
                         self.previous_call_place = "menu"
                         Utils.menu_navigate("menu/button_battle")
