@@ -31,6 +31,11 @@ class EventModule(object):
             'crosswave_normal': Region(1752, 612, 75, 75),
             'crosswave_easy': Region(1683, 798, 75, 75),
 
+            'essex_air_raid_ex': Region(1583, 246, 165, 42),
+            'essex_air_raid_hard': Region(1626, 400, 160, 30),
+            'essex_air_raid_normal': Region(1566, 580, 160, 30),
+            'essex_air_raid_easy': Region(1600, 747, 160, 30),
+
             'royal_maids_ex': Region(1583, 218, 165, 42),
             'royal_maids_hard': Region(1645, 366, 160, 30),
             'royal_maids_normal': Region(1587, 533, 160, 30),
@@ -42,7 +47,7 @@ class EventModule(object):
         the entire action of completing an event
         """
         event = self.config.events['name']
-        events = ['Crosswave', 'Royal_Maids']
+        events = ['Crosswave', 'Essex_Air_Raid', 'Royal_Maids']
 
         if event in events and not self.finished:
             Logger.log_msg("Opening event menu.")
@@ -140,7 +145,7 @@ class EventModule(object):
                 Utils.touch_randomly(self.region['tap_to_continue'])
                 Utils.script_sleep(1)
                 continue
-            if Utils.find("combat/button_confirm"):
+            if Utils.find("combat/button_retry"):
                 Logger.log_msg("Combat ended.")
                 Utils.touch_randomly(self.region['combat_end_confirm'])
                 self.stats.increment_combat_done()

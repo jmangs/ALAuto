@@ -300,7 +300,7 @@ class Config(object):
                 Logger.log_error("Skill book tier must be an integer between 1 and 3.")
 
         if self.events['enabled']:
-            events = ['Crosswave', 'Royal_Maids']
+            events = ['Crosswave', 'Essex_Air_Raid', 'Royal_Maids']
             stages = ['EX', 'H', 'N', 'E']
             if self.events['name'] not in events or all(elem not in stages for elem in self.events['levels']):
                 self.ok = False
