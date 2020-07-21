@@ -95,6 +95,7 @@ class CombatModule(object):
         }
 
         self.swipe_counter = 0
+        self.total_swipe_counter = 0
 
     def combat_logic_wrapper(self):
         """Method that fires off the necessary child methods that encapsulates
@@ -379,10 +380,8 @@ class CombatModule(object):
                         self.mystery_nodes_list.clear()
                         self.blacklist.clear()
                         Utils.script_sleep(3)
-                        if boss:
-                            self.exit = 5
-                            return False
-                        continue
+                        self.exit = 5
+                        return False
                     else:
                         # flagship sunk, but part of backline still remains
                         # proceed to retreat
@@ -565,6 +564,7 @@ class CombatModule(object):
         self.mystery_nodes_list.clear()
         self.blacklist.clear()
         self.swipe_counter = 0
+        self.total_swipe_counter = 0
         Logger.log_msg("Started map clear.")
         Utils.script_sleep(2.5)
 
@@ -580,7 +580,7 @@ class CombatModule(object):
             'E-D1': lambda: Utils.swipe(1060, 540, 1060, 560, 300),
             'E-D3': lambda: Utils.swipe(960, 540, 1060, 670, 300),
             # needs to be updated
-            '12-2': lambda: Utils.swipe(1000, 570, 1300, 540, 300),
+            '12-2': lambda: Utils.swipe(1000, 570, 1100, 540, 300),
             '12-3': lambda: Utils.swipe(1250, 530, 1300, 540, 300),
             '12-4': lambda: Utils.swipe(960, 300, 960, 540, 300),
             '13-1': lambda: Utils.swipe(1020, 500, 1300, 540, 300),
@@ -724,6 +724,9 @@ class CombatModule(object):
                 self.enemies_list.clear()
 
         while not self.enemies_list:
+            if (not boss and len(blacklist) > 8) or self.swipe_counter > 6:
+              self.exit = 5
+              break
             if (boss and len(blacklist) > 4) or (not boss and len(blacklist) > 3) or sim < 0.985:
                 if self.swipe_counter > 3: self.swipe_counter = 0
                 swipes = {
@@ -735,6 +738,7 @@ class CombatModule(object):
                 swipes.get(self.swipe_counter)()
                 sim += 0.005
                 self.swipe_counter += 1
+                self.total_swipe_counter += 1
             Utils.update_screen()
 
             if self.use_intersection:
