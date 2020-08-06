@@ -573,6 +573,9 @@ class CombatModule(object):
             Logger.log_warning("Fleet lock is not supported, disabling it.")
             Utils.wait_update_screen()
 
+        if self.config.combat["swap_fleet"]:
+          Utils.touch_randomly(self.region['button_switch_fleet'])
+
         #swipe map to fit everything on screen
         swipes = {
             'E-B3': lambda: Utils.swipe(960, 540, 1060, 670, 300),
