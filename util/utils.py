@@ -618,19 +618,19 @@ class Utils(object):
         image = cv2.cvtColor(color_screen, cv2.COLOR_BGR2HSV)
 
         # We use this primarily to pick out elites from event maps. Depending on the event, this may need to be updated with additional masks.
-        lower_red = numpy.array([170,100,180])
+        lower_red = numpy.array([170,100,100])
         upper_red = numpy.array([180,255,255])
         mask = cv2.inRange(image, lower_red, upper_red)
 
         ret, thresh = cv2.threshold(mask, 50, 255, cv2.THRESH_BINARY)
 
         # Build a structuring element to combine nearby contours together.
-        rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 25))
+        rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (30, 30))
         thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, rect_kernel)
 
         cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         contours = grab_contours(cnts)
-        contours = list(filter(lambda x: cv2.contourArea(x) > 3000, contours))
+        contours = list(filter(lambda x: cv2.contourArea(x) > 1000, contours))
 
         locations = []
         for contour in contours:
@@ -640,10 +640,9 @@ class Utils(object):
             y = round(M['m01'] / M['m00'])
             approx = cv2.approxPolyDP(hull, 0.04 * cv2.arcLength(contour, True), True)
             bound_x, bound_y, width, height = cv2.boundingRect(approx)
-            aspect_ratio = width / float(height)
 
             # filter out non-Siren matches (non-squares)
-            if 3 <= len(approx) <= 4 and 60 <= width <= 230 and 20 <= height <= 180:
+            if len(approx) == 4 and 120 <= width <= 230 and 20 <= height <= 180:
                 locations.append([x, y])
 
         return cls.filter_similar_coords(locations)

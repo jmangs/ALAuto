@@ -168,6 +168,7 @@ class Config(object):
         self.combat['low_mood_sleep_time'] = self.try_cast_to_float(config.get('Combat', 'LowMoodSleepTime'))
         self.combat['search_mode'] = self.try_cast_to_int(config.get('Combat', 'SearchMode'))
         self.combat['swap_fleet'] = config.getboolean('Combat', 'SwapStartingFleet')
+        self.combat['siren_kill_limit'] = self.try_cast_to_int(config.get('Combat', 'SirenKillLimit'))
 
     def _read_headquarters(self, config):
         """Method to parse the Headquarters settings passed in config.
@@ -274,6 +275,10 @@ class Config(object):
             if map[0] != "E" and self.combat['siren_elites']:
                 self.ok = False
                 Logger.log_error("Story maps don't have elite units.")
+
+            if not isinstance(self.combat['siren_kill_limit'], int) or self.combat['siren_kill_limit'] < 0:
+                self.ok = False
+                Logger.log_error("SirenKillLimit must be a integer > 0.")
 
             if not isinstance(self.combat['kills_before_boss'], int) or self.combat['kills_before_boss'] < 0:
                 self.ok = False

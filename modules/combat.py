@@ -26,6 +26,7 @@ class CombatModule(object):
         Utils.small_boss_icon = config.combat['small_boss_icon']
         self.exit = 0
         self.combats_done = 0
+        self.sirens_killed = 0
         self.enemies_list = []
         self.mystery_nodes_list = []
         self.blacklist = []
@@ -565,6 +566,7 @@ class CombatModule(object):
         self.blacklist.clear()
         self.swipe_counter = 0
         self.total_swipe_counter = 0
+        self.sirens_killed = 0
         Logger.log_msg("Started map clear.")
         Utils.script_sleep(2.5)
 
@@ -579,9 +581,9 @@ class CombatModule(object):
         #swipe map to fit everything on screen
         swipes = {
             'E-B3': lambda: Utils.swipe(960, 540, 1060, 670, 300),
-            'E-C2': lambda: Utils.swipe(1060, 540, 960, 540, 300),
-            'E-D1': lambda: Utils.swipe(1060, 540, 1060, 560, 300),
-            'E-D3': lambda: Utils.swipe(960, 540, 1060, 670, 300),
+            'E-C2': lambda: Utils.swipe(1060, 740, 760, 780, 300),
+            'E-D1': lambda: Utils.swipe(1060, 640, 160, 420, 300),
+            'E-D3': lambda: Utils.swipe(960, 240, 960, 800, 300),
             # needs to be updated
             '12-2': lambda: Utils.swipe(1000, 570, 1100, 540, 300),
             '12-3': lambda: Utils.swipe(1250, 530, 1300, 540, 300),
@@ -727,7 +729,7 @@ class CombatModule(object):
                 self.enemies_list.clear()
 
         while not self.enemies_list:
-            if (not boss and len(blacklist) > 8) or self.swipe_counter > 6:
+            if (not boss and len(blacklist) > 8) or self.total_swipe_counter > 6:
               self.exit = 5
               break
             if (boss and len(blacklist) > 4) or (not boss and len(blacklist) > 3) or sim < 0.985:
@@ -822,6 +824,48 @@ class CombatModule(object):
 			
             sim -= 0.005
 
+        if filter_coordinates:
+            self.enemies_list = Utils.filter_similar_coords(self.enemies_list, distance=67)
+        return self.enemies_list
+
+    def get_sirens(self, blacklist=[]):
+        sim = 0.99
+        self.enemies_list.clear()
+        filter_coordinates = True
+        if blacklist:
+            Logger.log_info('Blacklist: ' + str(blacklist))
+
+        while not self.enemies_list:
+            if self.total_swipe_counter > 8:
+              Logger.log_info('Failed to find siren elites. Switching to normal search.')
+              self.total_swipe_counter = 0
+              self.sirens_killed = self.config.combat['siren_kill_limit'] + 1
+              return self.get_enemies(blacklist, False)
+            if sim < 0.985:
+                if self.swipe_counter > 3: self.swipe_counter = 0
+                swipes = {
+                    0: lambda: Utils.swipe(960, 240, 960, 440, 300),
+                    1: lambda: Utils.swipe(1560, 540, 1060, 540, 300),
+                    2: lambda: Utils.swipe(960, 440, 960, 240, 300),
+                    3: lambda: Utils.swipe(1060, 540, 1560, 540, 300)
+                }
+                swipes.get(self.swipe_counter)()
+                sim += 0.005
+                self.swipe_counter += 1
+                self.total_swipe_counter += 1
+            Utils.update_screen()
+
+            l0 = Utils.find_siren_elites()
+            # filter coordinates inside prohibited regions
+            for p_region in self.prohibited_region.values():
+                l0 = [x for x in l0 if (not p_region.contains(x))]
+            l0 = [x for x in l0 if (not self.filter_blacklist(x, blacklist))]
+            Logger.log_debug("L7 " + str(l0))
+            self.enemies_list.extend(l0)
+
+            sim -= 0.005
+
+        self.sirens_killed += 1
         if filter_coordinates:
             self.enemies_list = Utils.filter_similar_coords(self.enemies_list, distance=67)
         return self.enemies_list
@@ -932,8 +976,10 @@ class CombatModule(object):
                 # mystery nodes are valid targets, same as enemies
                 enemies = self.get_enemies(blacklist, boss)
                 targets = enemies + mystery_nodes
+        elif self.config.combat['siren_elites'] and self.sirens_killed < self.config.combat['siren_kill_limit'] and not boss:
+            Logger.log_info("Prioritizing Siren elites.")
+            targets = self.get_sirens(blacklist)
         else:
-            # target only enemy mobs
             targets = self.get_enemies(blacklist, boss)
             
         closest = targets[Utils.find_closest(targets, location)[1]]
