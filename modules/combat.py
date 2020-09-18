@@ -531,7 +531,7 @@ class CombatModule(object):
     def retreat_handler(self):
         """ Retreats if necessary.
         """
-
+        
         force_retreat = True if self.exit != 1 else False
         pressed_retreat_button = False
 
@@ -615,7 +615,10 @@ class CombatModule(object):
             if self.config.combat['retreat_after'] != 0 and self.combats_done >= self.config.combat['retreat_after']:
                 Logger.log_msg("Retreating after defeating {} enemies".format(self.config.combat['retreat_after']))
                 self.exit = 2
-            if self.exit != 0:
+            if self.exit == 1:
+                Logger.log_msg("Boss fleet marked as defeated. Exiting combat loop.")
+                return True
+            if self.exit > 1:
                 self.retreat_handler()
                 return True
             if self.kills_count >= self.kills_before_boss[self.chapter_map] and Utils.find_in_scaling_range("enemy/fleet_boss", similarity=0.9):
